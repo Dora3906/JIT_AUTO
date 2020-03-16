@@ -12,9 +12,9 @@ import schedule
 from time import sleep
 import time
 
-# ！！！重要！！！  注：需将个人【教务系统账号密码】以及相关【电子邮箱】信息分别存放在本文件【同目录】下的【myInfo.txt】和【emailInfo.txt】文件中
-with open('Python/打卡/myInfo.txt', 'r') as f:
-    # 个人账号信息封装在myInfo.txt文件中，其中依次存放账号、密码信息（用空格分开）  例：17132xxxxx **********
+# 注：需将个人教务系统账号密码以及相关邮箱信息分别存放在同目录下的myInfo.txt和emailInfo.txt文件中
+with open('myInfo.txt', 'r') as f:
+    # 个人账号信息封装在myInfo.txt文件中，其中依次存放账号、密码信息（用空格分开）
     myInfo = f.read()
     myInfo = myInfo.split()
     usr_name = myInfo[0]
@@ -23,7 +23,6 @@ with open('Python/打卡/myInfo.txt', 'r') as f:
 
 # 打卡
 def checkIn():
-    
     driver = webdriver.Chrome()
     driver.get("http://ehall.jit.edu.cn/new/index.html")
     print("加载“我的金科院”页面成功！")
@@ -125,8 +124,8 @@ def checkIn():
 
 # 发邮件
 def sentEmail():
-    with open('Python/打卡//emailInfo.txt', 'r') as f1:
-        # 电子邮箱信息封装在【emailInfo.txt】文件中，其中依次存放【SMTP服务器地址 例：smtp.qq.com】、发送者邮箱账号、发送者QQ邮箱授权码、接收者邮箱账号信息（用空格分开）
+    with open('emailInfo.txt', 'r') as f1:
+        # 电子邮箱信息封装在emailInfo.txt文件中，其中依次存放SMTP服务器地址、发送者邮箱账号、发送者QQ邮箱授权码、接收者邮箱账号信息（用空格分开）
         # 注：需进QQ邮箱设置中开启POP3/SMTP服务（开户后会显示授权码，务必记下，登录邮箱时要用到）、IMAP/SMTP服务，
         # 并勾选“收取我的文件夹”、“SMTP发信后保存到服务器”，也可使用其他邮箱，使用方法见百度
         emailInfo = f1.read()
@@ -157,9 +156,9 @@ def shutdown():
 
 
 if __name__ == "__main__":
-    print("程序运行中。。。")
+    # checkIn() # 测试用，立即执行checkIn函数
     schedule.every().day.at("00:00").do(checkIn)
-    定时执行打卡的函数，成功后会发送邮件提示并自动关机
+    # 晚上12点时执行打卡的函数，成功后会发送邮件提示并自动关机
 
     while True:
         schedule.run_pending()
