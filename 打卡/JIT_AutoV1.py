@@ -23,7 +23,7 @@ with open('Python/打卡/myInfo.txt', 'r') as f:
 
 # 打卡
 def checkIn():
-    
+     
     driver = webdriver.Chrome()
     driver.get("http://ehall.jit.edu.cn/new/index.html")
     print("加载“我的金科院”页面成功！")
