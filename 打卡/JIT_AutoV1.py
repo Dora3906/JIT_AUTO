@@ -13,7 +13,7 @@ from time import sleep
 import time
 
 # 注：需将个人教务系统账号密码以及相关邮箱信息分别存放在同目录下的myInfo.txt和emailInfo.txt文件中
-with open('myInfo.txt', 'r') as f:
+with open('D:\PyCharmWorkSpace\打卡\myInfo.txt', 'r') as f:
     # 个人账号信息封装在myInfo.txt文件中，其中依次存放账号、密码信息（用空格分开）
     myInfo = f.read()
     myInfo = myInfo.split()
@@ -38,8 +38,8 @@ def checkIn():
     # 等待首页的登录按钮加载完成后点击登录按钮
 
     now_handle = driver.current_window_handle
-    print("加载登录页面成功!")
     driver.switch_to.window(now_handle)
+    print("加载登录页面成功!")
 
     driver.find_element_by_id("username").clear()
     driver.find_element_by_id("password").clear()
@@ -75,13 +75,26 @@ def checkIn():
             EC.presence_of_element_located((By.CSS_SELECTOR, ".bh-mb-16 > .bh-btn-primary")))
     finally:
         sleep(1)
-    driver.find_element_by_xpath("//div[@data-action='add']").click()
+    driver.find_element_by_css_selector(".bh-mb-16 > .bh-btn-primary").click()
     # 等待“新增”按钮加载完成，加载完成后点击“新增”按钮
     print("点击“新增”按钮")
 
     now_handle = driver.current_window_handle
     driver.switch_to.window(now_handle)
 
+    # 判断是否已经打卡过
+    try:
+        driver.find_element_by_xpath("//div[text()='今日已填报！']")
+        # 如果点击“新增”按钮时弹出已填报的对话框说明已经打卡过了。
+        print("今日已打卡！无需再次打卡！")
+        sentEmail()
+        shutdown()
+        driver.quit()
+        return
+    except:
+        print("今日还未打卡！开始打卡!")
+
+    sleep(3)
     try:
         WebDriverWait(driver, 1800).until(
             EC.presence_of_element_located((By.NAME, "DZ_DZBZ")))
@@ -108,23 +121,44 @@ def checkIn():
     driver.find_element_by_xpath("//label[text()='否']").click()
     # 等待“是否”对话框加载完成，加载完成后点击“否”单选框
     print("选择“否”")
-    sleep(10)
-    # 等待10秒
+    sleep(5)
     driver.find_element_by_xpath("//button[contains(@class,'bh-btn bh-btn-primary')]").click()
+    print("点击“确定“按钮")
     # 点击提交后打卡成功
-    print("打卡成功！")
+
+    now_handle = driver.current_window_handle
+    driver.switch_to.window(now_handle)
+    sleep(5)
+    try:
+        WebDriverWait(driver, 1800).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".bh-mb-16 > .bh-btn-primary")))
+    finally:
+        sleep(1)
+    driver.find_element_by_css_selector(".bh-mb-16 > .bh-btn-primary").click()
+    # 通过再次点击“新增”按钮来测试打卡是否成功
+    print("再次点击“新增”按钮以测试打卡成功否")
+    try:
+        driver.find_element_by_xpath("//div[text()='今日已填报！']")
+        # 如果再次点击“新增”按钮时弹出已填报的对话框说明打卡成功了。
+        print("打卡成功！")
+    except:
+        print("打卡失败！将尝试再次进行打卡！")
+        checkIn()
+        # 若没有成功则再次执行打卡程序。
+
     sleep(3)
     driver.quit()
     sentEmail()
     # 发送邮件通知打卡成功
-    sleep(60)
+    print("一分钟后将关机！！！")
+    sleep(5)
     shutdown()
     # 关机
 
 
 # 发邮件
 def sentEmail():
-    with open('emailInfo.txt', 'r') as f1:
+    with open('D:\PyCharmWorkSpace\打卡\emailInfo.txt', 'r') as f1:
         # 电子邮箱信息封装在emailInfo.txt文件中，其中依次存放SMTP服务器地址、发送者邮箱账号、发送者QQ邮箱授权码、接收者邮箱账号信息（用空格分开）
         # 注：需进QQ邮箱设置中开启POP3/SMTP服务（开户后会显示授权码，务必记下，登录邮箱时要用到）、IMAP/SMTP服务，
         # 并勾选“收取我的文件夹”、“SMTP发信后保存到服务器”，也可使用其他邮箱，使用方法见百度
@@ -156,10 +190,11 @@ def shutdown():
 
 
 if __name__ == "__main__":
-    # checkIn() # 测试用，立即执行checkIn函数
-    schedule.every().day.at("00:00").do(checkIn)
+    checkIn()
+    # # 测试用，立即执行checkIn函数
+    # schedule.every().day.at("00:00").do(checkIn)
     # 晚上12点时执行打卡的函数，成功后会发送邮件提示并自动关机
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    #
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)
